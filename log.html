@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Student Login & Registration</title>
+  <style>
+    :root {
+      --bg-color: #1f242d;
+      --snd-bg-color: #323946;
+      --text-color: #fff;
+      --main-color: #0ef;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: var(--bg-color);
+      margin: 0;
+      padding: 0;
+      color: var(--text-color);
+    }
+
+    .auth-container {
+      background: var(--snd-bg-color);
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(0, 238, 255, 0.2);
+      padding: 30px;
+      max-width: 400px;
+      margin: 50px auto;
+    }
+
+    .auth-tabs {
+      display: flex;
+      margin-bottom: 30px;
+      border-bottom: 2px solid #444;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 15px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text-color);
+      transition: all 0.3s ease;
+    }
+
+    .tab-btn.active {
+      color: var(--main-color);
+      border-bottom: 2px solid var(--main-color);
+    }
+
+    .auth-form h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: var(--main-color);
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    input[type="email"],
+    input[type="password"],
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #555;
+      border-radius: 5px;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+    }
+
+    input::placeholder {
+      color: #ccc;
+    }
+
+    .btn-primary {
+      background-color: var(--main-color);
+      color: #000;
+      padding: 10px 20px;
+      border: none;
+      width: 100%;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .btn-primary:hover {
+      background-color: #0acfd8;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    #message {
+      margin-top: 20px;
+      text-align: center;
+      font-weight: bold;
+    }
+
+    #message.success {
+      color: #0f0;
+    }
+
+    #message.error {
+      color: #f00;
+    }
+  </style>
+</head>
+<body>
+
+<div class="auth-container" id="auth-section">
+  <div class="auth-tabs">
+    <button class="tab-btn active" onclick="showLogin(event)">Login</button>
+    <button class="tab-btn" onclick="showRegister(event)">Register</button>
+  </div>
+
+  <!-- Login Form -->
+  <div id="login-form" class="auth-form">
+    <h2>Student Login</h2>
+    <form onsubmit="login(event)">
+      <div class="form-group">
+        <label for="login-email">Email:</label>
+        <input type="email" id="login-email" required placeholder="Enter your email">
+      </div>
+      <div class="form-group">
+        <label for="login-password">Password:</label>
+        <input type="password" id="login-password" required placeholder="Enter your password">
+      </div>
+      <button type="submit" class="btn-primary">Login</button>
+    </form>
+  </div>
+
+  <!-- Registration Form -->
+  <div id="register-form" class="auth-form hidden">
+    <h2>Student Registration</h2>
+    <form onsubmit="register(event)">
+      <div class="form-group">
+        <label for="reg-email">Email:</label>
+        <input type="email" id="reg-email" required placeholder="Enter your email">
+      </div>
+      <div class="form-group">
+        <label for="reg-password">Password:</label>
+        <input type="password" id="reg-password" required placeholder="Enter a password">
+      </div>
+      <div class="form-group">
+        <label for="reg-confirm-password">Confirm Password:</label>
+        <input type="password" id="reg-confirm-password" required placeholder="Confirm your password">
+      </div>
+      <div class="form-group">
+        <label for="reg-student-id">Student ID:</label>
+        <input type="text" id="reg-student-id" required placeholder="Enter your student ID">
+      </div>
+      <button type="submit" class="btn-primary">Register</button>
+    </form>
+  </div>
+
+  <div id="message"></div>
+</div>
+
+<script>
+  let currentUser = null;
+
+  document.addEventListener('DOMContentLoaded', function () {
+    checkLoginStatus();
+  });
+
+  function showLogin(event) {
+    document.getElementById('login-form').classList.remove('hidden');
+    document.getElementById('register-form').classList.add('hidden');
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    if (event) event.target.classList.add('active');
+  }
+
+  function showRegister(event) {
+    document.getElementById('register-form').classList.remove('hidden');
+    document.getElementById('login-form').classList.add('hidden');
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    if (event) event.target.classList.add('active');
+  }
+
+  function register(event) {
+    event.preventDefault();
+
+    const email = document.getElementById('reg-email').value;
+    const password = document.getElementById('reg-password').value;
+    const confirmPassword = document.getElementById('reg-confirm-password').value;
+    const studentId = document.getElementById('reg-student-id').value;
+
+    if (password !== confirmPassword) {
+      showMessage('Passwords do not match!', 'error');
+      return;
+    }
+
+    const users = JSON.parse(localStorage.getItem('students') || '{}');
+
+    if (users[email]) {
+      showMessage('User already exists!', 'error');
+      return;
+    }
+
+    users[email] = {
+      password: password,
+      studentId: studentId,
+      registrationDate: new Date().toISOString()
+    };
+
+    localStorage.setItem('students', JSON.stringify(users));
+    showMessage('Registration successful! Please login.', 'success');
+    event.target.reset();
+    showLogin();
+  }
+
+  function login(event) {
+    event.preventDefault();
+
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+
+    const users = JSON.parse(localStorage.getItem('students') || '{}');
+
+    if (users[email] && users[email].password === password) {
+      localStorage.setItem('loggedIn', 'true');
+      localStorage.setItem('username', email);
+      window.location.href = "index.html"; // ✅ redirect
+    } else {
+      showMessage('Invalid email or password!', 'error');
+    }
+  }
+
+  function checkLoginStatus() {
+    if (localStorage.getItem('loggedIn') === 'true') {
+      window.location.href = "index.html";
+    }
+  }
+
+  function showMessage(message, type) {
+    const messageDiv = document.getElementById('message');
+    messageDiv.textContent = message;
+    messageDiv.className = type;
+    setTimeout(() => {
+      messageDiv.textContent = '';
+      messageDiv.className = '';
+    }, 3000);
+  }
+</script>
+
+</body>
+</html>
